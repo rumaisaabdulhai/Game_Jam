@@ -20,7 +20,6 @@ BLACK =      ( 23,  23,  23, 255.0)
 #########
 pg.font.init()
 myfont = pg.font.SysFont('Comic Sans MS', 120)
-myfont2 = pg.font.Font("font/dosis.ttf", 120)
 score_font = pg.font.Font("font/dosis.ttf", 60)
 end_font = pg.font.Font("font/dosis.ttf", 55)
 tiny_score_font = pg.font.Font("font/dosis.ttf", 40)
@@ -35,10 +34,17 @@ Score = 0
 banana = False
 end_mode_2 = pg.USEREVENT+1
 
+##################
+# Simple Methods #
+##################
 def scale_image(image, scale):
     scaled_width = int(image.get_width() * scale)
     scaled_height = int(image.get_height() * scale)
     return pg.transform.scale(image,(scaled_width, scaled_height))
+
+def redrawWindow(Screen, bg, bgX, bgX2):
+    Screen.blit(bg, (bgX, 0))
+    Screen.blit(bg, (bgX2, 0))
 
 ###############
 # GIF SPRITES #
@@ -91,6 +97,9 @@ class Nyan(pg.sprite.Sprite):
         if  self.rect.top < 0:
                 self.rect.top = 0
 
+##############
+# TOKEN NYAN #
+##############
 class Token_Nyan(pg.sprite.Sprite):
     def __init__(self, given_x, given_y, given_nyan_mode, given_flip):
         super().__init__()
@@ -110,6 +119,9 @@ class Token_Nyan(pg.sprite.Sprite):
         nyangifcounter += 1
         nyangifcounter = nyangifcounter % len(NYANGIFS[nyan_mode])
 
+##############
+# DONUT NYAN #
+##############
 class Donut_Nyan(pg.sprite.Sprite):
     def __init__(self, given_x, given_y, given_nyan_mode, given_flip):
         super().__init__()
@@ -129,7 +141,9 @@ class Donut_Nyan(pg.sprite.Sprite):
         nyangifcounter += 1
         nyangifcounter = nyangifcounter % len(NYANGIFS[donut_nyan_mode])
 
-# Cake Sprite - speeds up nyan cake
+########
+# CAKE #
+########
 class Cake(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
@@ -145,7 +159,9 @@ class Cake(pg.sprite.Sprite):
             Speed += 10
             self.kill()
 
-# Donut Sprite - special powers 
+#########
+# DONUT #
+#########
 class Donut(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
@@ -163,7 +179,9 @@ class Donut(pg.sprite.Sprite):
             pg.time.set_timer(end_mode_2,6800)
             self.kill()
 
-# Peel Sprite
+########
+# PEEL #
+########
 class Peel(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
@@ -179,8 +197,9 @@ class Peel(pg.sprite.Sprite):
         if collides(self):
             banana = not banana
             self.kill()
-
-# Bomb Sprite
+########
+# BOMB #
+########
 class Bomb(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
@@ -197,7 +216,9 @@ class Bomb(pg.sprite.Sprite):
             Speed -= self.speed
             self.kill()
 
-# Asteroid Sprite
+############
+# ASTEROID #
+############
 class Asteroid(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
@@ -213,13 +234,12 @@ class Asteroid(pg.sprite.Sprite):
         if collides(self):
             Speed -= self.speed
             self.kill()
-      
-def redrawWindow(Screen, bg, bgX, bgX2):
-    Screen.blit(bg, (bgX, 0))
-    Screen.blit(bg, (bgX2, 0))
 
 nyan = Nyan()
 
+#######################
+# Collision Detection #
+#######################
 # check if object collides with nyancat
 def collides(a):
     global nyan_mode
@@ -230,7 +250,10 @@ def collides(a):
         pg.mixer.music.queue('audio/nyan_audio.ogg')
         return False
     return nyan.rect.colliderect(a.rect)
-
+    
+#############
+# Game Loop #
+#############
 def game_loop(Screen):
     global Score, max_speed, nyan_mode, nyangifcounter, Speed
     Speed = 30
@@ -250,19 +273,15 @@ def game_loop(Screen):
     paused = False
 
     while playing:
-
-        #keep screen paused if space was pressed
-        keys = pg.key.get_pressed()
-        if keys[pg.K_SPACE]:
-            pg.time.delay(200)
-            if (not paused):
-                # speed_text = score_font.render('Too Speedy :/', False, WHITE)
-                # Screen.blit(speed_text,(200,200))
-                print("no u")
-                paused=True
-            elif (paused):
-                print("stuffu")
-                paused=False
+        
+        # keep screen paused if space was pressed
+        for event in pg.event.get():
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    if (not paused):
+                        paused = True
+                    elif (paused):
+                        paused = False
 
         if not paused:
             Score += Speed/100
@@ -315,16 +334,23 @@ def game_loop(Screen):
             speed_text = score_font.render('Speed: ' + str(Speed), False, WHITE)
             Screen.blit(speed_text,(0,int(speed_text.get_height())))
 
-            #display 'press space to pause' text
-            space_to_pause_text = tiny_score_font.render('Press space to pause', False, WHITE)
-            Screen.blit(space_to_pause_text,(int(SCREEN_WIDTH/2-space_to_pause_text.get_width()/2),int((SCREEN_HEIGHT-1.5*space_to_pause_text.get_height()))))
-
-            pg.display.update()
-
             # game over screen, max speed + score
             if Speed <= 0:
                 playing = False
 
+        if paused:
+            paused_text = tiny_score_font.render('Paused. Press space to continue.', False, WHITE)
+            Screen.blit(paused_text,(int(SCREEN_WIDTH/2-paused_text.get_width()/2),int(SCREEN_HEIGHT/2 - (paused_text.get_height()/2))))
+        else:
+            #display 'press space to pause' text
+            space_to_pause_text = tiny_score_font.render('Press space to pause', False, WHITE)
+            Screen.blit(space_to_pause_text,(int(SCREEN_WIDTH/2-space_to_pause_text.get_width()/2),int((SCREEN_HEIGHT-1.5*space_to_pause_text.get_height()))))
+        pg.display.update()
+
+
+##############
+# BEGIN CARD #
+##############
 def begin_card(Screen):
     global myfont, nyan_mode, nyangifcounter, max_speed, Score, banana
     ending = True
@@ -373,6 +399,9 @@ def begin_card(Screen):
                     ending = False        
     return quit
 
+##############
+# End Screen #
+##############
 def end_card(Screen):
     global myfont, nyan_mode, nyangifcounter, max_speed, Score, banana
     ending = True
@@ -421,6 +450,9 @@ def end_card(Screen):
         
     return quit
     
+###############
+# Main Method #
+###############
 def main():
     Screen = pg.display.set_mode(DIM)
     pg.display.set_caption("Nyan Universe")
