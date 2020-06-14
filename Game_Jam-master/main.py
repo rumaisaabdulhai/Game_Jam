@@ -49,6 +49,7 @@ DONYANGIF = [scale_image(pg.image.load("images/donyan_gif/" + str(i+1) + ".png")
 
 NYANGIFS = [NYANGIF, GHOSTGIF, DONYANGIF]
 nyan_mode = 0
+donut_nyan_mode = 0
 nyangifcounter = 0
 
 ########
@@ -97,16 +98,36 @@ class Token_Nyan(pg.sprite.Sprite):
         self.y = given_y
         self.image = NYANGIFS[0][0]
         self.rect = self.image.get_rect(x=self.x, y=self.y)
-        token_nyangifcounter=0
-        flip = given_flip
-        token_nyan_mode = given_nyan_mode
+        self.flip = given_flip
+        nyan_mode = given_nyan_mode
     def update(self):
+        global nyangifcounter, nyan_mode
+        nyangifcounter = nyangifcounter % len(NYANGIFS[nyan_mode])
         if not self.flip:
             self.image = NYANGIFS[nyan_mode][nyangifcounter]
         else:
             self.image = pg.transform.flip(NYANGIFS[nyan_mode][nyangifcounter],True, False)
-        self.token_nyangifcounter += 1
-        self.token_nyangifcounter = nyangifcounter % len(NYANGIFS[nyan_mode])
+        nyangifcounter += 1
+        nyangifcounter = nyangifcounter % len(NYANGIFS[nyan_mode])
+
+class Donut_Nyan(pg.sprite.Sprite):
+    def __init__(self, given_x, given_y, given_nyan_mode, given_flip):
+        super().__init__()
+        self.x = given_x
+        self.y = given_y
+        self.image = NYANGIFS[0][0]
+        self.rect = self.image.get_rect(x=self.x, y=self.y)
+        self.flip = given_flip
+        donut_nyan_mode = given_nyan_mode
+    def update(self):
+        global nyangifcounter, donut_nyan_mode
+        nyangifcounter = nyangifcounter % len(NYANGIFS[donut_nyan_mode])
+        if not self.flip:
+            self.image = NYANGIFS[donut_nyan_mode][nyangifcounter]
+        else:
+            self.image = pg.transform.flip(NYANGIFS[donut_nyan_mode][nyangifcounter],True, False)
+        nyangifcounter += 1
+        nyangifcounter = nyangifcounter % len(NYANGIFS[donut_nyan_mode])
 
 # Cake Sprite - speeds up nyan cake
 class Cake(pg.sprite.Sprite):
@@ -312,8 +333,8 @@ def begin_card(Screen):
     nyangifcounter = 1
     banana = False
     
-    nyan_the_colorful = Token_Nyan(100, 400, 0, False)
-    donut_monster = Token_Nyan(500, 400, 2, True)
+    nyan_the_colorful = Token_Nyan(175, 370, 0, False)
+    donut_monster = Donut_Nyan(525, 370, 2, True)
 
     all_sprites = pg.sprite.Group()
     all_sprites.add(nyan_the_colorful)
@@ -407,10 +428,10 @@ def main():
     playing = True
     quit = False
 
-    # pg.init()
-    # pg.mixer.init()
-    # pg.mixer.music.load('audio/nyan_audio.ogg')
-    # pg.mixer.music.play(-1)
+    pg.init()
+    pg.mixer.init()
+    pg.mixer.music.load('audio/nyan_audio.ogg')
+    pg.mixer.music.play(-1)
 
     while not quit:
         begin_card(Screen)
